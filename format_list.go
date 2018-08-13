@@ -5,6 +5,7 @@ import "sort"
 // FormatList is a slice of formats with filtering functionality
 type FormatList []Format
 
+// Filter filters
 func (formats FormatList) Filter(key FormatKey, values []interface{}) FormatList {
 	var dst FormatList
 	for _, v := range values {
@@ -18,6 +19,7 @@ func (formats FormatList) Filter(key FormatKey, values []interface{}) FormatList
 	return dst
 }
 
+// Extremes filters by extremes
 func (formats FormatList) Extremes(key FormatKey, best bool) FormatList {
 	dst := formats.Copy()
 	if len(dst) > 1 {
@@ -35,14 +37,17 @@ func (formats FormatList) Extremes(key FormatKey, best bool) FormatList {
 	return dst
 }
 
+// Best filters by extremes for the best
 func (formats FormatList) Best(key FormatKey) FormatList {
 	return formats.Extremes(key, true)
 }
 
+// Worst filters by extremes for the worst
 func (formats FormatList) Worst(key FormatKey) FormatList {
 	return formats.Extremes(key, false)
 }
 
+// Sort sorts by format key
 func (formats FormatList) Sort(key FormatKey, reverse bool) {
 	wrapper := formatsSortWrapper{formats, key}
 	if !reverse {
@@ -52,6 +57,7 @@ func (formats FormatList) Sort(key FormatKey, reverse bool) {
 	}
 }
 
+// Subtract filters by subtracting one FormatList by another
 func (formats FormatList) Subtract(other FormatList) FormatList {
 	var dst FormatList
 	for _, f := range formats {
@@ -69,6 +75,7 @@ func (formats FormatList) Subtract(other FormatList) FormatList {
 	return dst
 }
 
+// Copy copies the FormatList and returns
 func (formats FormatList) Copy() FormatList {
 	dst := make(FormatList, len(formats))
 	copy(dst, formats)

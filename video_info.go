@@ -104,7 +104,29 @@ func GetVideoInfoFromID(id string) (*VideoInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return getVideoInfoFromHTML(id, body)
+	return getVideoInfoFromHTML(id, "", "", body)
+}
+
+// GetVideoInfoFromIDAndLang fetches video info from a youtube video id with the specified language
+func GetVideoInfoFromIDAndLang(id string, gl string, hl string) (*VideoInfo, error) {
+	u, _ := url.ParseRequestURI(youtubeBaseURL)
+	values := u.Query()
+	values.Set("v", id)
+	u.RawQuery = values.Encode()
+
+	resp, err := http.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Invalid status code: %d", resp.StatusCode)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return getVideoInfoFromHTML(id, gl, hl, body)
 }
 
 // GetDownloadURL gets the download url for a format
@@ -138,7 +160,7 @@ func (info *VideoInfo) Download(format Format, dest io.Writer) error {
 	return err
 }
 
-func getVideoInfoFromHTML(id string, html []byte) (*VideoInfo, error) {
+func getVideoInfoFromHTML(id string, gl string, hl string, html []byte) (*VideoInfo, error) {
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(html))
 	if err != nil {
 		return nil, err
@@ -204,7 +226,16 @@ func getVideoInfoFromHTML(id string, html []byte) (*VideoInfo, error) {
 			"eurl":     []string{youtubeVideoEURL + id},
 		}
 
-		resp, err = http.Get(youtubeVideoInfoURL + "?" + query.Encode())
+		var lang string
+
+		if gl == "" || hl == "" {
+			lang = ""
+		} else {
+			lang = "&gl=" + gl + "&hl=" + hl
+		}
+		
+		resp, err = http.Get(youtubeVideoInfoURL + "?" + query.Encode() + lang)
+		println(youtubeVideoInfoURL + "?" + query.Encode() + lang)
 		if err != nil {
 			return nil, fmt.Errorf("Error fetching video info: %s", err.Error())
 		}

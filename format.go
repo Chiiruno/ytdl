@@ -58,6 +58,7 @@ func (f Format) ValueForKey(key FormatKey) interface{} {
 	}
 }
 
+// CompareKey compares keys
 func (f Format) CompareKey(other Format, key FormatKey) int {
 	switch key {
 	case FormatResolutionKey:
